@@ -3,6 +3,8 @@ Crops transparent pixels from the edge of a png image.
 
 ______________________
 
+## Usage
+
 **To crop a single image:**
 
 ```shell
