@@ -28,7 +28,7 @@ const writeImage = ({ filename, pixels, firstPixel, imageSize }) => {
   image.write(filename);
 };
 
-const cropImage = (inputFilename, outputFilename) => {
+const cropImage = (inputFilename, outputFilename, shouldLog) => {
   const { width, height } = PNG.load(inputFilename);
 
   let firstPixel = {};
@@ -91,16 +91,31 @@ const cropImage = (inputFilename, outputFilename) => {
       firstPixel,
       imageSize: { width, height },
     });
+
+    if (shouldLog) {
+      const components = outputFilename.split('.');
+      components.pop();
+      const logFilename = components.join('.');
+
+      const logData = `left:${firstPixel.left}\n` +
+                       `right:${firstPixel.right}\n` +
+                       `top:${firstPixel.top}\n` +
+                       `bottom:${firstPixel.bottom}\n`;
+      fs.writeFile(`${logFilename}.txt`, logData, err => {
+        if (err) console.log(err);
+      });
+    }
   });
 };
 
 const stats = fs.statSync(inputPath);
+const shouldLog = process.argv.includes('--log');
 
 if (stats.isDirectory()) {
   fs.readdir(inputPath, (err, files) => {
     files.forEach(filename => {
       if (filename.includes('.png')) {
-        cropImage(`${inputPath}/${filename}`, `${outputPath}/${filename}`);
+        cropImage(`${inputPath}/${filename}`, `${outputPath}/${filename}`, shouldLog);
       }
     });
   });
@@ -110,6 +125,6 @@ if (stats.isDirectory()) {
   } else {
     const components = inputPath.split('/');
     const filename = components[components.length - 1];
-    cropImage(inputPath, `${outputPath}/${filename}`);
+    cropImage(inputPath, `${outputPath}/${filename}`, shouldLog);
   }
 }
